@@ -104,9 +104,7 @@ class Renderer {
         });
     }
 
-    
-    
-    // framebuffer:  canvas ctx image data
+     // framebuffer:  canvas ctx image data
     drawSlide2(framebuffer) {
         // First convex polygon
         const vertices1 = [
@@ -150,37 +148,73 @@ class Renderer {
     drawSlide3(framebuffer) {
         // Adjusted colors for clarity
         const colorR = [255, 0, 0, 255]; // Red
-        const colorA = [0, 255, 0, 255]; // Green
+        const colorA = [0, 300, 0, 255]; // Green
         const colorF = [0, 0, 255, 255]; // Blue
-        const colorY = [255, 255, 0, 255]; // Yellow for distinction
+        const colorY = [255, 255, 0, 255]; // Yellow
     
         // Scale factor to make things bigger
-        const scaleFactor = 1.5; // Increase the scale factor to make the letters bigger
+        const scaleFactor = 1.5; 
         const adjust = (value) => Math.floor(value * scaleFactor);
     
         // Drawing "R" 
-        this.drawLine({ x: adjust(50), y: adjust(100) }, { x: adjust(50), y: adjust(50) }, colorR, framebuffer); 
-        this.drawLine({ x: adjust(50), y: adjust(100) }, { x: adjust(75), y: adjust(100) }, colorR, framebuffer); 
-        this.drawLine({ x: adjust(75), y: adjust(100) }, { x: adjust(75), y: adjust(75) }, colorR, framebuffer); 
-        this.drawLine({ x: adjust(75), y: adjust(75) }, { x: adjust(50), y: adjust(75) }, colorR, framebuffer); 
-        this.drawLine({ x: adjust(50), y: adjust(75) }, { x: adjust(75), y: adjust(50) }, colorR, framebuffer); 
+        this.drawLine({ x: adjust(50), y: adjust(100) }, { x: adjust(50), y: adjust(50) }, colorR, framebuffer); // Vertical line
+        this.drawLine({ x: adjust(50), y: adjust(100) }, { x: adjust(75), y: adjust(100) }, colorR, framebuffer); // Top horizontal line
+        this.drawLine({ x: adjust(75), y: adjust(100) }, { x: adjust(75), y: adjust(75) }, colorR, framebuffer); // Vertical line
+        this.drawLine({ x: adjust(75), y: adjust(75) }, { x: adjust(50), y: adjust(75) }, colorR, framebuffer); // Bottom horizontal line
+        this.drawLine({ x: adjust(50), y: adjust(75) }, { x: adjust(75), y: adjust(50) }, colorR, framebuffer); // Diagonal line
+    
     
         // Drawing "F"
-        this.drawLine({ x: adjust(125), y: adjust(50) }, { x: adjust(125), y: adjust(100) }, colorF, framebuffer); 
-        this.drawLine({ x: adjust(125), y: adjust(100) }, { x: adjust(150), y: adjust(100) }, colorF, framebuffer);
-        this.drawLine({ x: adjust(125), y: adjust(75) }, { x: adjust(150), y: adjust(75) }, colorF, framebuffer); 
-    
+        this.drawLine({ x: adjust(125), y: adjust(50) }, { x: adjust(125), y: adjust(100) }, colorF, framebuffer); // Vertical line
+        this.drawLine({ x: adjust(125), y: adjust(100) }, { x: adjust(150), y: adjust(100) }, colorF, framebuffer); // Top horizontal line
+        
+        // Add a curve below the bottom horizontal line of "F"
+        this.drawBezierCurve(
+            { x: adjust(125), y: adjust(80) }, // Start point
+            { x: adjust(130), y: adjust(90) }, // Control point 1
+            { x: adjust(145), y: adjust(90) }, // Control point 2
+            { x: adjust(150), y: adjust(80) }, // End point
+            10, // Number of edges for the curve
+            colorF, framebuffer
+        );
         
         // Drawing First "A"
-        this.drawLine({ x: adjust(85), y: adjust(50) }, { x: adjust(100), y: adjust(100) }, colorA, framebuffer); 
-        this.drawLine({ x: adjust(100), y: adjust(100) }, { x: adjust(115), y: adjust(50) }, colorA, framebuffer); 
+        this.drawLine({ x: adjust(85), y: adjust(50) }, { x: adjust(100), y: adjust(100) }, colorA, framebuffer);
+        this.drawLine({ x: adjust(100), y: adjust(100) }, { x: adjust(115), y: adjust(50) }, colorA, framebuffer);
         this.drawLine({ x: adjust(90), y: adjust(75) }, { x: adjust(110), y: adjust(75) }, colorA, framebuffer);
     
-        // Drawing second "A"
-        this.drawLine({ x: adjust(160), y: adjust(50) }, { x: adjust(175), y: adjust(100) }, colorA, framebuffer); 
-        this.drawLine({ x: adjust(175), y: adjust(100) }, { x: adjust(190), y: adjust(50) }, colorA, framebuffer); 
-        this.drawLine({ x: adjust(165), y: adjust(75) }, { x: adjust(185), y: adjust(75) }, colorA, framebuffer); 
+        // Fill in the polygon for "A"
+        this.drawConvexPolygon([
+            { x: adjust(85), y: adjust(50) },
+            { x: adjust(100), y: adjust(100) },
+            { x: adjust(115), y: adjust(50) }
+        ], colorA, framebuffer);
     
+        // Drawing Second "a" with curve in it 
+        const circleCenter = { x: adjust(175), y: adjust(75) }; // Center of the circle
+        const circleRadius = adjust(15); // Radius of the circle
+        const num_curve_sections = 20; // Number of edges for the circle
+        this.drawCircle(circleCenter, circleRadius, num_curve_sections, colorA, framebuffer);
+
+        // Draw a vertical line to the right of the circle
+        const lineX = circleCenter.x + circleRadius + 2; // Starting point to the right of the circle
+        const lineYStart = circleCenter.y - circleRadius / 2; // Starting point above the circle
+        const lineYEnd = circleCenter.y + circleRadius * 1; // Ending point below the circle
+        const lineStart = { x: lineX, y: lineYStart }; // Starting point
+        const lineEnd = { x: lineX, y: lineYEnd }; // Ending point
+        this.drawLine(lineStart, lineEnd, colorA, framebuffer);
+
+        // Draw a curve extending to the left from the bottom of the vertical line
+        const curveStart = lineEnd; 
+
+        // Adjusted points for the curve extending to the left
+        const curveP1 = { x: curveStart.x, y: curveStart.y + adjust(20) }; // First control point, left and slightly down
+        const curveP2 = { x: curveStart.x - adjust(20), y: curveStart.y + adjust(5) }; // Second control point, left and slightly down
+        const curveP3 = { x: curveStart.x - adjust(30), y: curveStart.y - adjust(1) }; // End point, left and slightly up
+
+        // Draw the curve extending to the left
+        this.drawBezierCurve(curveStart, curveP1, curveP2, curveP3, num_curve_sections, colorA, framebuffer);
+
         // Drawing "Y"
         this.drawLine({ x: adjust(200), y: adjust(100) }, { x: adjust(215), y: adjust(75) }, colorY, framebuffer); 
         this.drawLine({ x: adjust(215), y: adjust(75) }, { x: adjust(230), y: adjust(100) }, colorY, framebuffer); 
